@@ -16,6 +16,6 @@ const SellerProductSchema = new mongoose.Schema({
   productCategory: { type: String },
 });
 
-const Product = mongoose.model("SellerProduct", SellerProductSchema);
+const Product = mongoose.model("Product", SellerProductSchema);
 
 module.exports = Product;

@@ -1,154 +1,71 @@
+const Order = require("../models/Order");
 const Product = require("../models/Product");
 
-const addProduct = async (req, res) => {
+const createOrder = async (req, res) => {
   try {
-    const { name, seller_id, stock, price, colors, productImage } = req.body;
+    const { customer_id, seller_id, products } = req.body;
 
-    if (!name || !seller_id || !stock || !price || !colors || !productImage) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "All fields are required: name, seller_id, stock, price, colors, productImage",
-      });
+    let totalPrice = 0;
+    for (const item of products) {
+      const product = await Product.findById(item.product);
+      if (product) {
+        totalPrice += product.price * item.quantity;
+      } else {
+        return res
+          .status(400)
+          .json({ message: `Product with ID ${item.product} not found` });
+      }
     }
 
-    if (stock <= 0 || price <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Stock and price must be greater than zero",
-      });
-    }
-
-    if (
-      !Array.isArray(colors) ||
-      colors.length === 0 ||
-      !colors.every((color) => typeof color === "string")
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Colors must be a non-empty array of strings",
-      });
-    }
-
-    const newProduct = await Product.create({
-      name,
+    const newOrder = new Order({
+      customer_id,
       seller_id,
-      stock,
-      price,
-      colors,
-      productImage,
-    });
-
-    res.status(201).json({
-      success: true,
-      message: "Product Added",
-      sellerProduct: newProduct,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Error adding product",
-      error: error.message,
-    });
-  }
-};
-
-const getAllProducts = async (req, res) => {
-  try {
-    const products = await Product.find();
-    res.status(200).json({
-      success: true,
       products,
+      totalPrice,
+      status: "Pending",
+      orderDate: new Date(),
     });
+
+    const savedOrder = await newOrder.save();
+
+    for (const item of products) {
+      const product = await Product.findById(item.product);
+      if (product) {
+        product.stock -= item.quantity;
+        await product.save();
+      }
+    }
+
+    res.status(201).json(savedOrder);
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Error fetching products",
-      error: error.message,
-    });
+    res.status(500).json({ message: "Error creating order", error });
   }
 };
 
-const getProductById = async (req, res) => {
+const getOrderById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
-    if (!product) {
-      return res.status(404).json({
-        success: false,
-        message: "Product not found",
-      });
+    const order = await Order.findById(req.params.id);
+    if (order) {
+      res.status(200).json(order);
+    } else {
+      res.status(404).json({ message: "Order not found" });
     }
-    res.status(200).json({
-      success: true,
-      product,
-    });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Error fetching product",
-      error: error.message,
-    });
+    res.status(500).json({ message: "Error fetching order", error });
   }
 };
 
-const updateProduct = async (req, res) => {
+const getCustomerOrders = async (req, res) => {
   try {
-    const { name, stock, price, colors, productImage } = req.body;
-    const updatedProduct = await Product.findByIdAndUpdate(
-      req.params.id,
-      { name, stock, price, colors, productImage },
-      { new: true, runValidators: true }
-    );
-
-    if (!updatedProduct) {
-      return res.status(404).json({
-        success: false,
-        message: "Product not found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Product updated",
-      product: updatedProduct,
-    });
+    const orders = await Order.find({ customer_id: req.user.id });
+    res.status(200).json(orders);
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Error updating product",
-      error: error.message,
-    });
-  }
-};
-
-const deleteProduct = async (req, res) => {
-  try {
-    const deletedProduct = await Product.findByIdAndDelete(req.params.id);
-
-    if (!deletedProduct) {
-      return res.status(404).json({
-        success: false,
-        message: "Product not found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Product deleted",
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Error deleting product",
-      error: error.message,
-    });
+    res.status(500).json({ message: "Error fetching orders", error });
   }
 };
 
 module.exports = {
-  addProduct,
-  getAllProducts,
-  getProductById,
-  updateProduct,
-  deleteProduct,
+  createOrder,
+  getOrderById,
+  getCustomerOrders,
 };

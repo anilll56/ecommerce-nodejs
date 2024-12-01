@@ -3,6 +3,7 @@ const express = require("express");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/auth");
 const productRoutes = require("./routes/product");
+const orderRoutes = require("./routes/order");
 
 const app = express();
 
@@ -13,6 +14,7 @@ connectDB();
 
 app.use("/auth", authRoutes);
 app.use("/product", productRoutes);
+app.use("/order", orderRoutes);
 
 const PORT = process.env.PORT || 5858;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
