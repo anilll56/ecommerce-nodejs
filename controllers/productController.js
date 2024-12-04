@@ -132,6 +132,23 @@ const updateProduct = async (req, res) => {
   }
 };
 
+const getProductsBySeller = async (req, res) => {
+  try {
+    const sellerId = req.user.userId;
+    const products = await Product.find({ seller_id: sellerId });
+    res.status(200).json({
+      success: true,
+      products,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching products",
+      error: error.message,
+    });
+  }
+};
+
 const deleteProduct = async (req, res) => {
   try {
     const deletedProduct = await Product.findByIdAndDelete(req.params.id);
@@ -162,4 +179,5 @@ module.exports = {
   getProductById,
   updateProduct,
   deleteProduct,
+  getProductsBySeller,
 };
