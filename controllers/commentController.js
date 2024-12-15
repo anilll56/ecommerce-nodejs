@@ -1,13 +1,37 @@
 const Comment = require("../models/Comment");
+const Product = require("../models/Product");
+const mongoose = require("mongoose");
 
 const createComment = async (req, res) => {
   try {
+    const { product, text, rate } = req.body;
+
     const comment = new Comment({
-      user: req.user.id,
-      product: req.body.product,
-      text: req.body.text,
+      user: req.user.userId, // take the user id from the token
+      product,
+      text,
+      rate,
     });
     const savedComment = await comment.save();
+
+    const productToUpdate = await Product.findById(product);
+    if (!productToUpdate) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    const [totalComments, totalRating] = await Promise.all([
+      Comment.countDocuments({ product }),
+      Comment.aggregate([
+        { $match: { product: mongoose.Types.ObjectId(product) } },
+        { $group: { _id: null, total: { $sum: "$rate" } } },
+      ]),
+    ]);
+
+    const newAverageRating =
+      totalRating.length > 0 ? totalRating[0].total / totalComments : 0;
+    productToUpdate.productRating = newAverageRating;
+    await productToUpdate.save();
+
     res.status(201).json(savedComment);
   } catch (error) {
     res.status(500).json({ message: error.message });

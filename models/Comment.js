@@ -17,6 +17,10 @@ const CommentSchema = new Schema({
     type: String,
     required: true,
   },
+  rate: {
+    type: Number,
+    required: true,
+  },
   date: {
     type: Date,
     default: Date.now,

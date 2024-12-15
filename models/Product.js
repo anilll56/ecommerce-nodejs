@@ -7,13 +7,21 @@ const SellerProductSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
-  stock: { type: Number, required: true },
+  stock: {
+    type: mongoose.Schema.Types.Mixed,
+    required: true,
+    default: 10,
+  },
   price: { type: Number, required: true },
   colors: { type: [String], required: true },
   productImage: { type: String, required: true },
-  stock: { type: Number, required: true },
   productDescription: { type: String },
-  productCategory: { type: String },
+  productCategory: {
+    type: String,
+    required: true,
+    enum: ["electronics", "clothing", "furniture", "books", "other"],
+  },
+  productRating: { type: Number, default: 0 },
 });
 
 const Product = mongoose.model("Product", SellerProductSchema);

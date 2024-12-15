@@ -21,12 +21,12 @@ const addProduct = async (req, res) => {
       });
     }
 
-    if (stock <= 0 || price <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Stock and price must be greater than zero",
-      });
-    }
+    // if (stock <= 0 || price <= 0) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "Stock and price must be greater than zero",
+    //   });
+    // }
 
     // if (
     //   !Array.isArray(colors) ||
