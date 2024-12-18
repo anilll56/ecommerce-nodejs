@@ -136,8 +136,8 @@ const updateProduct = async (req, res) => {
 
 const getProductsBySeller = async (req, res) => {
   try {
-    const sellerId = req.user.userId;
-    const products = await Product.find({ seller_id: sellerId });
+    const sellerId = req.query.sellerId || req.user.userId;
+    const products = await Product.find({ seller_id: sellerId }).populate("seller_id", "name");
     res.status(200).json({
       success: true,
       products,

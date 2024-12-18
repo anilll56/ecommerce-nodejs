@@ -12,7 +12,7 @@ router.post("/add", addProduct);
 
 router.get("/all", getAllProducts);
 
-router.get("/seller", auth, getProductsBySeller);
+router.get("/seller", getProductsBySeller);
 
 router.get("/:id", getProductById);
 
