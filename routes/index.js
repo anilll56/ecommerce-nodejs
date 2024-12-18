@@ -14,5 +14,8 @@ router.use("/order", orderRoutes);
 router.use("/comment", commentRoutes);
 router.use("/basket", basketRoutes);
 router.use("/favorites", favoritesRoutes);
+router.use("/health", (req, res) => {
+  res.send("Server is up and running");
+});
 
 module.exports = router;

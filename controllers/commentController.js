@@ -7,7 +7,7 @@ const createComment = async (req, res) => {
     const { product, text, rate } = req.body;
 
     const comment = new Comment({
-      user: req.user.userId, // take the user id from the token
+      user: req.user.userId,
       product,
       text,
       rate,
@@ -19,26 +19,29 @@ const createComment = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    const [totalComments, totalRating] = await Promise.all([
+    const [totalComments, ratingAggregation] = await Promise.all([
       Comment.countDocuments({ product }),
       Comment.aggregate([
-        { $match: { product: mongoose.Types.ObjectId(product) } },
+        { $match: { product } },
         { $group: { _id: null, total: { $sum: "$rate" } } },
       ]),
     ]);
 
-    const newAverageRating =
-      totalRating.length > 0 ? totalRating[0].total / totalComments : 0;
+    const totalRating = ratingAggregation[0]?.total || 0;
+    const newAverageRating = totalComments > 0 ? totalRating / totalComments : 0;
+
     productToUpdate.productRating = newAverageRating;
     await productToUpdate.save();
 
-    res.status(201).json(savedComment);
+    return res.status(201).json(savedComment);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
+
 const getCommentsByProduct = async (req, res) => {
+  console.log(req.params.productId);
   try {
     const comments = await Comment.find({
       product: req.params.productId,

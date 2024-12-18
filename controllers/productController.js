@@ -1,4 +1,5 @@
 const Product = require("../models/Product");
+const Comment = require("../models/Comment");
 
 const addProduct = async (req, res) => {
   try {
@@ -66,7 +67,7 @@ const addProduct = async (req, res) => {
 
 const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find();
+    const products = await Product.find().populate("seller_id", "name");
     res.status(200).json({
       success: true,
       products,
@@ -82,7 +83,8 @@ const getAllProducts = async (req, res) => {
 
 const getProductById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id)
+      .populate("seller_id", "name");
     if (!product) {
       return res.status(404).json({
         success: false,

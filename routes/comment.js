@@ -7,6 +7,6 @@ const {
 const { auth } = require("../middleware/authMiddleware");
 
 router.post("/create", auth, createComment);
-router.get("/get", getCommentsByProduct);
+router.get("/:productId", getCommentsByProduct);
 
 module.exports = router;

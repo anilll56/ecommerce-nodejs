@@ -195,10 +195,26 @@ const changePassword = async (req, res) => {
   }
 };
 
+const getSellers = async (req, res) => {
+  try {
+    const sellers = await User.find({ userType: "seller" }).select(
+      "-password"
+    );
+    res.json(sellers);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error getting sellers",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   register,
   loginUser,
   userInfo,
   updateUser,
   changePassword,
+  getSellers,
 };
