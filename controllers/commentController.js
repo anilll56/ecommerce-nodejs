@@ -14,31 +14,41 @@ const createComment = async (req, res) => {
     });
     const savedComment = await comment.save();
 
-    const productToUpdate = await Product.findById(product);
+    console.log("Product ID received:", product);
+
+    const productId = new mongoose.Types.ObjectId(product);
+    const productToUpdate = await Product.findById(productId);
+
     if (!productToUpdate) {
+      console.error("Product not found with ID:", product);
       return res.status(404).json({ message: "Product not found" });
     }
 
+    // Yorum sayısını ve toplam puanı al
     const [totalComments, ratingAggregation] = await Promise.all([
-      Comment.countDocuments({ product }),
+      Comment.countDocuments({ product: productId }),
       Comment.aggregate([
-        { $match: { product } },
+        { $match: { product: productId } },
         { $group: { _id: null, total: { $sum: "$rate" } } },
       ]),
     ]);
 
-    const totalRating = ratingAggregation[0]?.total || 0;
-    const newAverageRating = totalComments > 0 ? totalRating / totalComments : 0;
+    const totalRating =
+      ratingAggregation.length > 0 ? ratingAggregation[0].total : 0;
+    const newAverageRating =
+      totalComments > 0 ? totalRating / totalComments : 0;
+
+    console.log("New average rating:", newAverageRating);
 
     productToUpdate.productRating = newAverageRating;
     await productToUpdate.save();
 
     return res.status(201).json(savedComment);
   } catch (error) {
+    console.error("Error in createComment:", error);
     res.status(500).json({ message: error.message });
   }
 };
-
 
 const getCommentsByProduct = async (req, res) => {
   try {
