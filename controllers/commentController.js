@@ -40,7 +40,7 @@ const createComment = async (req, res) => {
 
     console.log("New average rating:", newAverageRating);
 
-    productToUpdate.productRating = newAverageRating;
+    productToUpdate.productRating = newAverageRating.toFixed(1);
     await productToUpdate.save();
 
     return res.status(201).json(savedComment);
@@ -54,7 +54,7 @@ const getCommentsByProduct = async (req, res) => {
   try {
     const comments = await Comment.find({
       product: req.params.productId,
-    }).populate("user", "name");
+    }).populate("user", "name").sort({ date: -1 });
     res.status(200).json(comments);
   } catch (error) {
     res.status(500).json({ message: error.message });
