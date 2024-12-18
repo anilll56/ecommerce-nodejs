@@ -41,7 +41,6 @@ const createComment = async (req, res) => {
 
 
 const getCommentsByProduct = async (req, res) => {
-  console.log(req.params.productId);
   try {
     const comments = await Comment.find({
       product: req.params.productId,
