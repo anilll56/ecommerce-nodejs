@@ -14,7 +14,8 @@ const getFavorites = async (req, res) => {
 };
 
 const addFavorite = async (req, res) => {
-  const { userId, productId } = req.body;
+  const { productId } = req.body;
+  const userId = req.user.userId;
 
   if (!userId) {
     return res.status(400).json({ message: "Kullanıcı kimliği bulunamadı." });
