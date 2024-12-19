@@ -24,7 +24,6 @@ const createComment = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // Yorum sayısını ve toplam puanı al
     const [totalComments, ratingAggregation] = await Promise.all([
       Comment.countDocuments({ product: productId }),
       Comment.aggregate([
@@ -54,7 +53,9 @@ const getCommentsByProduct = async (req, res) => {
   try {
     const comments = await Comment.find({
       product: req.params.productId,
-    }).populate("user", "name").sort({ date: -1 });
+    })
+      .populate("user", "name")
+      .sort({ date: -1 });
     res.status(200).json(comments);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -64,7 +65,7 @@ const getCommentsByProduct = async (req, res) => {
 const updateComment = async (req, res) => {
   try {
     const comment = await Comment.findById(req.params.commentId);
-    if (comment.user.toString() !== req.user.id) {
+    if (comment.user.toString() !== req.user.userId) {
       return res.status(403).json({ message: "Unauthorized" });
     }
     comment.text = req.body.text;
@@ -78,7 +79,7 @@ const updateComment = async (req, res) => {
 const deleteComment = async (req, res) => {
   try {
     const comment = await Comment.findById(req.params.commentId);
-    if (comment.user.toString() !== req.user.id) {
+    if (comment.user.toString() !== req.user.userId) {
       return res.status(403).json({ message: "Unauthorized" });
     }
     await comment.remove();

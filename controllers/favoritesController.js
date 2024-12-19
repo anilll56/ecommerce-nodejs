@@ -1,11 +1,12 @@
 const Favorite = require("../models/Favorites");
+const mongoose = require("mongoose");
 
 const getFavorites = async (req, res) => {
-  const { userId } = req.body;
+  const userId = req.user.userId;
   try {
     const favorites = await Favorite.find({
-      user_id: userId,
-    }).populate("product_id");
+      user: userId,
+    }).populate("product");
 
     res.status(200).json(favorites);
   } catch (err) {
@@ -22,22 +23,34 @@ const addFavorite = async (req, res) => {
   }
   try {
     const newFavorite = new Favorite({
-      user_id: userId,
-      product_id: productId,
+      user: userId,
+      product: productId,
     });
 
     const favorite = await newFavorite.save();
     res.status(201).json(favorite);
   } catch (err) {
+    console.error("Error saving favorite:", err.message);
     res.status(500).json({ message: err.message });
   }
 };
 
 const removeFavorite = async (req, res) => {
+  const userId = req.user.userId;
+  let productId = req.params.productId;
+
+  // Trim any extra whitespace or newline characters from productId
+  productId = productId.trim();
+
+  // Check if the productId is a valid ObjectId
+  if (!mongoose.Types.ObjectId.isValid(productId)) {
+    return res.status(400).json({ message: "Invalid product ID" });
+  }
+
   try {
     const favorite = await Favorite.findOneAndDelete({
-      user: req.user.id,
-      product: req.params.productId,
+      user: userId,
+      product: productId,
     });
 
     if (!favorite) {

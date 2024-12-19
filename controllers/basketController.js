@@ -22,7 +22,8 @@ const getBasketItems = async (req, res) => {
 };
 
 const addItemToBasket = async (req, res) => {
-  const { userId, productId, quantity } = req.body;
+  const { productId, quantity } = req.body;
+  const userId = req.user.userId;
 
   if (!userId) {
     return res.status(400).json({ message: "Kullanıcı kimliği bulunamadı." });
@@ -54,21 +55,19 @@ const addItemToBasket = async (req, res) => {
     await basket.save();
     res.status(201).json(basket);
   } catch (error) {
-    console.error(error);
+    console.error("Error adding item to basket:", error);
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
-
 const calculateTotalPrice = async (products) => {
   let totalPrice = 0;
-  const productIds = products.map((item) => item.product);
-  const productDetails = await Product.find({ _id: { $in: productIds } });
+
   for (const item of products) {
-    const product = productDetails.find(
-      (p) => p._id.toString() === item.product.toString()
-    );
+    const product = await Product.findById(item.product);
     if (product) {
       totalPrice += product.price * item.quantity;
+    } else {
+      console.warn(`Ürün bulunamadı: ${item.product}`);
     }
   }
 
@@ -78,26 +77,52 @@ const calculateTotalPrice = async (products) => {
 const removeItemFromBasket = async (req, res) => {
   const { productId } = req.params;
   try {
-    await Basket.findOneAndDelete({ userId: req.user.id, productId });
-    res.status(200).json({ message: "Item removed from basket" });
+    const basket = await Basket.findOne({ user_id: req.user.userId });
+
+    if (!basket) {
+      return res.status(404).json({ message: "Basket not found" });
+    }
+
+    basket.products = basket.products.filter(
+      (item) => item.product.toString() !== productId
+    );
+
+    basket.totalPrice = await calculateTotalPrice(basket.products);
+
+    await basket.save();
+    res.status(200).json({ message: "Item removed from basket", basket });
   } catch (error) {
+    console.error("Error removing item from basket:", error);
     res.status(500).json({ message: "Server Error", error });
   }
 };
 
 const updateBasketItem = async (req, res) => {
   const { productId, quantity } = req.body;
-  try {
-    let basketItem = await Basket.findOne({ userId: req.user.id, productId });
 
-    if (basketItem) {
-      basketItem.quantity = quantity;
-      await basketItem.save();
-      res.status(200).json(basketItem);
-    } else {
-      res.status(404).json({ message: "Item not found in basket" });
+  try {
+    const basket = await Basket.findOne({ user_id: req.user.userId });
+
+    if (!basket) {
+      return res.status(404).json({ message: "Basket not found" });
     }
+
+    const productIndex = basket.products.findIndex(
+      (item) => item.product.toString() === productId
+    );
+
+    if (productIndex === -1) {
+      return res.status(404).json({ message: "Product not found in basket" });
+    }
+
+    basket.products[productIndex].quantity = quantity;
+
+    basket.totalPrice = await calculateTotalPrice(basket.products);
+
+    await basket.save();
+    res.status(200).json(basket);
   } catch (error) {
+    console.error("Error updating basket:", error);
     res.status(500).json({ message: "Server Error", error });
   }
 };
