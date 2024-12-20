@@ -1,6 +1,8 @@
+const sendEmail = require("../mail/nodemailer");
 const Order = require("../models/Order");
 const Product = require("../models/Product");
 const mongoose = require("mongoose");
+const User = require("../models/User");
 
 const createOrder = async (req, res) => {
   try {
@@ -12,9 +14,7 @@ const createOrder = async (req, res) => {
       if (product) {
         totalPrice += product.price * item.quantity;
       } else {
-        return res
-          .status(400)
-          .json({ message: `Product with ID ${item.product} not found` });
+        return res.status(400).json({ message: `Product with ID ${item.product} not found` });
       }
     }
 
@@ -28,7 +28,11 @@ const createOrder = async (req, res) => {
     });
 
     const savedOrder = await newOrder.save();
+    if (savedOrder) {
+      const user = await User.findById(customer_id);
 
+      sendEmail(user.email, "Ürün satın alındı");
+    }
     for (const item of products) {
       const product = await Product.findById(item.product);
       if (product) {
@@ -77,9 +81,7 @@ const getCustomerOrders = async (req, res) => {
 
 const getOrdersBySeller = async (req, res) => {
   try {
-    const orders = await Order.find({ seller_id: req.user.userId }).populate(
-      "products.product"
-    );
+    const orders = await Order.find({ seller_id: req.user.userId }).populate("products.product");
     res.status(200).json(orders);
   } catch (error) {
     console.error("Error fetching orders:", error);

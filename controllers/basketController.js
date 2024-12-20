@@ -4,14 +4,10 @@ const Product = require("../models/Product");
 const getBasketItems = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const basketItems = await Basket.find({ user_id: userId }).populate(
-      "products.product"
-    );
+    const basketItems = await Basket.find({ user_id: userId }).populate("products.product");
 
     if (basketItems.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No basket items found for this user." });
+      return res.status(404).json({ message: "No basket items found for this user." });
     }
 
     res.status(200).json(basketItems);
@@ -33,9 +29,7 @@ const addItemToBasket = async (req, res) => {
     let basket = await Basket.findOne({ user_id: userId });
 
     if (basket) {
-      const productIndex = basket.products.findIndex(
-        (item) => item.product.toString() === productId
-      );
+      const productIndex = basket.products.findIndex((item) => item.product.toString() === productId);
 
       if (productIndex > -1) {
         basket.products[productIndex].quantity += quantity;
@@ -76,16 +70,17 @@ const calculateTotalPrice = async (products) => {
 
 const removeItemFromBasket = async (req, res) => {
   const { productId } = req.params;
+
+  console.log(productId);
   try {
     const basket = await Basket.findOne({ user_id: req.user.userId });
 
+    console.log(basket);
     if (!basket) {
       return res.status(404).json({ message: "Basket not found" });
     }
 
-    basket.products = basket.products.filter(
-      (item) => item.product.toString() !== productId
-    );
+    basket.products = basket.products.filter((item) => item.product.toString() !== productId);
 
     basket.totalPrice = await calculateTotalPrice(basket.products);
 
@@ -107,9 +102,7 @@ const updateBasketItem = async (req, res) => {
       return res.status(404).json({ message: "Basket not found" });
     }
 
-    const productIndex = basket.products.findIndex(
-      (item) => item.product.toString() === productId
-    );
+    const productIndex = basket.products.findIndex((item) => item.product.toString() === productId);
 
     if (productIndex === -1) {
       return res.status(404).json({ message: "Product not found in basket" });
