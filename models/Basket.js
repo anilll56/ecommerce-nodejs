@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-
 const Schema = mongoose.Schema;
 
 const BasketSchema = new Schema({
@@ -42,4 +41,6 @@ BasketSchema.pre("save", function (next) {
   next();
 });
 
-module.exports = mongoose.model("Basket", BasketSchema);
+const Basket = mongoose.model("Basket", BasketSchema);
+
+module.exports = Basket;

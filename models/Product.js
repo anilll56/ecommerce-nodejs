@@ -11,6 +11,7 @@ const SellerProductSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
     required: true,
     default: 10,
+    type: Number,
   },
   price: { type: Number, required: true },
   colors: { type: [String], required: true },
