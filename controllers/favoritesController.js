@@ -4,9 +4,15 @@ const mongoose = require("mongoose");
 const getFavorites = async (req, res) => {
   const userId = req.user.userId;
   try {
-    const favorites = await Favorite.find({
+    let favorites = await Favorite.find({
       user: userId,
     }).populate("product");
+
+    if (!favorites) {
+      return res.status(404).json({ message: "Favoriler bulunamadı." });
+    }
+
+    favorites = favorites.map((favorite) => favorite.product);
 
     res.status(200).json(favorites);
   } catch (err) {
