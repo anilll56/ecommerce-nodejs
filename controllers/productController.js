@@ -67,7 +67,10 @@ const addProduct = async (req, res) => {
 
 const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find().populate("seller_id", "name");
+    const { category } = req.query;
+    console.log(category);
+    const query = category ? { productCategory: category } : {};
+    const products = await Product.find(query).populate("seller_id", "name");
     res.status(200).json({
       success: true,
       products,
