@@ -15,7 +15,9 @@ const createOrder = async (req, res) => {
       if (product) {
         totalPrice += product.price * item.quantity;
       } else {
-        return res.status(400).json({ message: `Product with ID ${item.product} not found` });
+        return res
+          .status(400)
+          .json({ message: `Product with ID ${item.product} not found` });
       }
     }
 
@@ -47,7 +49,9 @@ const createOrder = async (req, res) => {
 const createOrdersFromBasket = async (req, res) => {
   try {
     const user_id = req.user.userId;
-    const basket = await Basket.findOne({ user_id }).populate("products.product");
+    const basket = await Basket.findOne({ user_id }).populate(
+      "products.product"
+    );
 
     if (!basket) {
       return res.status(404).json({ message: "Basket not found" });
@@ -80,7 +84,11 @@ const createOrdersFromBasket = async (req, res) => {
 
         const user = await User.findById(user_id);
 
-        sendEmail(user, "Siparişinizi aldık ve işleme koymaya başladık. Aşağıda sipariş detaylarınızı bulabilirsiniz:", product);
+        sendEmail(
+          user,
+          "Siparişinizi aldık ve işleme koymaya başladık. Aşağıda sipariş detaylarınızı bulabilirsiniz:",
+          product
+        );
 
         const savedOrder = await newOrder.save();
         orders.push(savedOrder);
@@ -88,7 +96,10 @@ const createOrdersFromBasket = async (req, res) => {
         product.stock -= item.quantity;
         await product.save();
       } catch (error) {
-        console.error(`Error creating order for product ${item.product}:`, error);
+        console.error(
+          `Error creating order for product ${item.product}:`,
+          error
+        );
         return res.status(500).json({
           message: "Error creating order, see logs for details",
           error: error.message,
@@ -145,7 +156,9 @@ const getCustomerOrders = async (req, res) => {
 
 const getOrdersBySeller = async (req, res) => {
   try {
-    const orders = await Order.find({ seller_id: req.user.userId }).populate("products.product");
+    const orders = await Order.find({ seller_id: req.user.userId }).populate(
+      "products.product"
+    );
     res.status(200).json(orders);
   } catch (error) {
     console.error("Error fetching orders:", error);
@@ -164,11 +177,10 @@ const updateOrderStatus = async (req, res) => {
     }
 
     const order = await Order.findById(_id);
-
-    //const user = await User.findById(customer_id);
-
-    //sendEmail(user, "Siparişiniz kargoya verildi:", order.products);
-
+    if (newStatus === "Shipped") {
+      const user = await User.findById(order.customer_id);
+      sendEmail(user, "Siparişiniz kargoya verildi:", order.products);
+    }
     if (order) {
       order.status = newStatus;
       await order.save();
