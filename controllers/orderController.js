@@ -31,11 +31,7 @@ const createOrder = async (req, res) => {
     });
 
     const savedOrder = await newOrder.save();
-    if (savedOrder) {
-      const user = await User.findById(customer_id);
 
-      sendEmail(user.email, "Ürün satın alındı");
-    }
     for (const item of products) {
       const product = await Product.findById(item.product);
       if (product) {
@@ -85,6 +81,10 @@ const createOrdersFromBasket = async (req, res) => {
           status: "Pending",
           orderDate: new Date(),
         });
+
+        const user = await User.findById(user_id);
+
+        sendEmail(user.email, "Ürün satın alındı");
 
         const savedOrder = await newOrder.save();
         orders.push(savedOrder);
@@ -164,8 +164,10 @@ const getOrdersBySeller = async (req, res) => {
 
 const updateOrderStatus = async (req, res) => {
   try {
-    const _id = req.params_id;
+    const _id = req.params.id;
     const newStatus = req.body.status;
+    console.log("Order ID:", _id, "New Status:", newStatus);
+
     if (!newStatus) {
       return res.status(400).json({ message: "Status is required" });
     }
