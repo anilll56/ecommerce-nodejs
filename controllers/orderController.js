@@ -15,9 +15,7 @@ const createOrder = async (req, res) => {
       if (product) {
         totalPrice += product.price * item.quantity;
       } else {
-        return res
-          .status(400)
-          .json({ message: `Product with ID ${item.product} not found` });
+        return res.status(400).json({ message: `Product with ID ${item.product} not found` });
       }
     }
 
@@ -49,9 +47,7 @@ const createOrder = async (req, res) => {
 const createOrdersFromBasket = async (req, res) => {
   try {
     const user_id = req.user.userId;
-    const basket = await Basket.findOne({ user_id }).populate(
-      "products.product"
-    );
+    const basket = await Basket.findOne({ user_id }).populate("products.product");
 
     if (!basket) {
       return res.status(404).json({ message: "Basket not found" });
@@ -84,11 +80,7 @@ const createOrdersFromBasket = async (req, res) => {
 
         const user = await User.findById(user_id);
 
-        sendEmail(
-          user,
-          "Siparişinizi aldık ve işleme koymaya başladık. Aşağıda sipariş detaylarınızı bulabilirsiniz:",
-          product
-        );
+        sendEmail(user, "Siparişinizi aldık ve işleme koymaya başladık. Aşağıda sipariş detaylarınızı bulabilirsiniz:", product);
 
         const savedOrder = await newOrder.save();
         orders.push(savedOrder);
@@ -96,10 +88,7 @@ const createOrdersFromBasket = async (req, res) => {
         product.stock -= item.quantity;
         await product.save();
       } catch (error) {
-        console.error(
-          `Error creating order for product ${item.product}:`,
-          error
-        );
+        console.error(`Error creating order for product ${item.product}:`, error);
         return res.status(500).json({
           message: "Error creating order, see logs for details",
           error: error.message,
@@ -156,9 +145,7 @@ const getCustomerOrders = async (req, res) => {
 
 const getOrdersBySeller = async (req, res) => {
   try {
-    const orders = await Order.find({ seller_id: req.user.userId }).populate(
-      "products.product"
-    );
+    const orders = await Order.find({ seller_id: req.user.userId }).populate("products.product");
     res.status(200).json(orders);
   } catch (error) {
     console.error("Error fetching orders:", error);
@@ -179,7 +166,9 @@ const updateOrderStatus = async (req, res) => {
     const order = await Order.findById(_id);
     if (newStatus === "Shipped") {
       const user = await User.findById(order.customer_id);
-      sendEmail(user, "Siparişiniz kargoya verildi:", order.products);
+      const product = await Order.findById(_id).populate("products.product");
+
+      sendEmail(user, "Siparişiniz kargoya verildi:", product.products[0].product);
     }
     if (order) {
       order.status = newStatus;
@@ -192,6 +181,30 @@ const updateOrderStatus = async (req, res) => {
     res.status(500).json({ message: "Error updating order", error });
   }
 };
+
+// const getShippedOrders = async (req, res) => {
+//   try {
+//     const customerId = req.user.userId;
+
+//     if (!mongoose.Types.ObjectId.isValid(customerId)) {
+//       return res.status(400).json({ message: "Invalid customer ID format" });
+//     }
+
+//     const shippedOrders = await Order.find({
+//       customer_id: customerId,
+//       status: "Shipped",
+//     }).populate("products.product");
+
+//     if (shippedOrders.length === 0) {
+//       return res.status(404).json({ message: "No shipped orders found" });
+//     }
+
+//     res.status(200).json(shippedOrders);
+//   } catch (error) {
+//     console.error("Error fetching shipped orders:", error.message);
+//     res.status(500).json({ message: "Error fetching shipped orders", error });
+//   }
+// };
 
 module.exports = {
   createOrder,
