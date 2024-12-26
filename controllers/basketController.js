@@ -70,7 +70,7 @@ const calculateTotalPrice = async (products) => {
     }
   }
 
-  return totalPrice;
+  return totalPrice.toFixed(2);
 };
 
 const removeItemFromBasket = async (req, res) => {
