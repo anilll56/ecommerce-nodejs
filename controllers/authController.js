@@ -169,23 +169,23 @@ const changePassword = async (req, res) => {
         success: false,
         message: "User not found",
       });
-    } else {
-      const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
-      if (!isPasswordValid) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid old password",
-        });
-      } else {
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(newPassword, salt);
-        await user.save();
-        res.json({
-          success: true,
-          message: "Password changed successfully",
-        });
-      }
     }
+
+    const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
+    if (!isPasswordValid) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid old password",
+      });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Password changed successfully",
+    });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -197,9 +197,7 @@ const changePassword = async (req, res) => {
 
 const getSellers = async (req, res) => {
   try {
-    const sellers = await User.find({ userType: "seller" }).select(
-      "-password"
-    );
+    const sellers = await User.find({ userType: "seller" }).select("-password");
     res.json(sellers);
   } catch (error) {
     res.status(500).json({
