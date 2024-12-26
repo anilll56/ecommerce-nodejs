@@ -86,8 +86,10 @@ const getAllProducts = async (req, res) => {
 
 const getProductById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id)
-      .populate("seller_id", "name");
+    const product = await Product.findById(req.params.id).populate(
+      "seller_id",
+      "name"
+    );
     if (!product) {
       return res.status(404).json({
         success: false,
@@ -140,7 +142,10 @@ const updateProduct = async (req, res) => {
 const getProductsBySeller = async (req, res) => {
   try {
     const sellerId = req.query.sellerId || req.user.userId;
-    const products = await Product.find({ seller_id: sellerId }).populate("seller_id", "name");
+    const products = await Product.find({ seller_id: sellerId }).populate(
+      "seller_id",
+      "name"
+    );
     res.status(200).json({
       success: true,
       products,

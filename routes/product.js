@@ -4,6 +4,7 @@ const {
   getAllProducts,
   getProductsBySeller,
   getProductById,
+  deleteProduct,
 } = require("../controllers/productController");
 const { auth } = require("../middleware/authMiddleware");
 const router = express.Router();
@@ -15,5 +16,7 @@ router.get("/all", getAllProducts);
 router.get("/seller", getProductsBySeller);
 
 router.get("/:id", getProductById);
+
+router.delete("/delete/:id", auth, deleteProduct);
 
 module.exports = router;
