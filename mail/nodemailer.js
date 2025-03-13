@@ -2,26 +2,23 @@ const nodemailer = require("nodemailer");
 
 async function sendEmail(user, message, product) {
   try {
-    // Transporter oluştur
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
         user: "numansocu5258@gmail.com",
-        pass: "fquo oxjm kybl pifw", // Şifrenizi kontrol edin
+        pass: "fquo oxjm kybl pifw",
       },
     });
 
-    // Bağlantıyı test et
     await transporter.verify();
     console.log("SMTP bağlantısı başarılı.");
 
-    // E-posta seçeneklerini tanımla
     const mailOptions = {
       from: "numansocu5258@gmail.com",
       to: user.email,
       subject: "Siparişiniz Alındı!",
       text: "Sipariş detaylarınızı görmek için HTML destekli bir e-posta istemcisi kullanın.",
-      html: emailTemplate(user, message, product), // Şablon burada
+      html: emailTemplate(user, message, product),
     };
 
     // E-postayı gönder
