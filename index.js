@@ -11,5 +11,4 @@ app.use(require("cors")());
 app.use("/", routes);
 connectDB();
 
-const PORT = process.env.PORT || 5858;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+module.exports = app;
