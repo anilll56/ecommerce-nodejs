@@ -29,7 +29,7 @@ jobs:
         run: docker build -t ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:latest .
 
       - name: 🧪 Run Docker Container for Tests
-        run: docker run --rm ${{ secrets.DOCKER_USERNAME }}/ecommerce-app npm test
+        run: docker run --rm ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:latest npm test
 
       - name: 📤 Push Docker Image to Docker Hub
         run: docker push ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:latest
