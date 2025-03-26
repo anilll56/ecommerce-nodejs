@@ -38,8 +38,18 @@ jobs:
       - name: 🏗️ Build Docker Image
         run: docker build -t ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:latest .
 
+      - name: 🔍 Run Security Audit
+        run: npm audit --audit-level=high || echo "Security audit found issues but not failing the build."
+
       - name: 🧪 Run Docker Container for Tests
-        run: docker run --rm ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:latest npm test
+        run: docker run --rm ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:latest npm test -- --json --outputFile=test-results.json
+
+      - name: 📤 Upload Test Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: test-results.json
 
       - name: 📤 Push Docker Image to Docker Hub
+        if: success()
         run: docker push ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:latest
