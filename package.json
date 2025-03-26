@@ -6,6 +6,17 @@
     "test": "jest --transformIgnorePatterns \"node_modules/(?!bson)\"",
     "start": "node index.js"
   },
+  "jest": {
+    "reporters": [
+      "default",
+      [
+        "jest-json-reporter",
+        {
+          "outputFile": "test-results.json"
+        }
+      ]
+    ]
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

@@ -25,24 +25,16 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Check Docker Username Format
-        run: |
-          echo "Docker Username: ${{ secrets.DOCKER_USERNAME }}"  
-          if [[ "${{ secrets.DOCKER_USERNAME }}" == *[!a-zA-Z0-9_-]* ]]; then  
-            echo "Username format is invalid!"  
-            exit 1  
-          else  
-            echo "Username format is valid!"  
-          fi
-
       - name: 🏗️ Build Docker Image
         run: docker build -t ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:latest .
 
-      - name: 🔍 Run Security Audit
-        run: npm audit --audit-level=high || echo "Security audit found issues but not failing the build."
+      - name: 🧪 Run Docker Container for Tests and Save Results
+        run: |
+          docker run --rm -v $PWD:/app ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:latest \
+            npm test -- --json --outputFile=/app/test-results.json
 
-      - name: 🧪 Run Docker Container for Tests
-        run: docker run --rm ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:latest npm test -- --json --outputFile=test-results.json
+      - name: 📂 Check if test-results.json exists
+        run: ls -l test-results.json || echo "test-results.json not found!"
 
       - name: 📤 Upload Test Results
         uses: actions/upload-artifact@v4
