@@ -1,4 +1,4 @@
-# Node.js'in en güncel LTS sürümünü kullan
+# Use the latest LTS version of Node.js
 FROM node:18-alpine
 
 
@@ -6,13 +6,21 @@ WORKDIR /app
 
 
 COPY package*.json ./
-RUN npm install -g jest  # Jest'i global olarak yükle
+
+
 RUN npm install
 
-# Kodu içeri al
+
+RUN npm install -g jest
+
+
+RUN npm install jest-json-reporter --save-dev
+
+
 COPY . .
 
 
 EXPOSE 3000
 
-CMD ["npx", "jest", "--json", "--outputFile=test-results.json"]
+
+CMD ["npx", "jest", "--json", "--outputFile=/app/test-results.json"]
