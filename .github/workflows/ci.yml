@@ -154,32 +154,7 @@ jobs:
           docker-compose --version
 
       - name: 🚀 Deploy to Test Environment with Docker Compose
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         run: |
-          export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
           docker-compose -f docker-compose.test.yml up -d
-
-      - name: 📢 Notify Slack on Success
-        uses: slackapi/slack-github-action@v1.26.0
-        with:
-          payload: |
-            {
-              "text": "Deployment to Test Environment was successful!",
-              "attachments": [
-                {
-                  "color": "#36a64f",
-                  "title": "Deployment Details",
-                  "fields": [
-                    {
-                      "title": "Commit",
-                      "value": "${{ github.sha }}",
-                      "short": true
-                    },
-                    {
-                      "title": "Branch",
-                      "value": "${{ github.ref }}",
-                      "short": true
-                    }
-                  ]
-                }
-              ]
-            }
