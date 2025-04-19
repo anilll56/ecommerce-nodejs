@@ -14,23 +14,81 @@ jobs:
 
     steps:
       - name: 🚀 Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4 # v3 yerine v4 kullanıyoruz, en güncel versiyon
+
+      - name: 🟢 Set up Node.js
+        uses: actions/setup-node@v4 # v3 yerine v4 kullanıyoruz
+        with:
+          node-version: "18"
+          cache: "npm" # npm bağımlılıklarını otomatik cache'ler
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 🧹 Run Linter
+        run: npm run lint
+        # Not: Projenizde ESLint veya Prettier kurulu olmalı ve `package.json` içinde `lint` script'i tanımlı olmalı
+        # Örnek: "lint": "eslint ."
+
+      - name: 🧪 Run Tests with Coverage
+        run: npm test -- --coverage
+        # Not: Jest veya benzeri bir test framework'ü kurulu olmalı ve coverage desteği aktif olmalı
+        # Örnek: "test": "jest"
+
+      - name: 📊 Upload Coverage Report
+        uses: codecov/codecov-action@v4 # v3 yerine v4 kullanıyoruz
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+
+      - name: 🔍 Run Security Audit
+        run: npm audit --audit-level=high
 
       - name: 🔨 Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3 # v2 yerine v3 kullanıyoruz
+
+      - name: 🗄️ Cache Docker Layers
+        uses: actions/cache@v4 # v3 yerine v4 kullanıyoruz
+        with:
+          path: /tmp/.buildx-cache
+          key: buildx-${{ github.sha }}
+          restore-keys: buildx-
 
       - name: 🔑 Log in to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3 # v2 yerine v3 kullanıyoruz
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: 🏗️ Build Docker Image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:latest .
+        uses: docker/build-push-action@v6 # v5 yerine v6 kullanıyoruz
+        with:
+          context: .
+          push: false
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:latest
+            ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:${{ github.sha }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
 
       - name: 🧪 Run Tests in Docker Container
         run: docker run --rm ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:latest
+        # Not: Docker imajınızın test komutunu çalıştırması için Dockerfile'da uygun CMD veya ENTRYPOINT tanımlı olmalı
 
       - name: 📤 Push Docker Image
         if: success()
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:latest
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:latest
+            ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:${{ github.sha }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+
+      - name: 🚀 Deploy to Test Environment with Docker Compose
+        if: github.ref == 'refs/heads/main'
+        run: |
+          docker-compose -f docker-compose.test.yml up -d
+        # Not: Bu adım için bir `docker-compose.test.yml` dosyası oluşturmalısınız
+        # Örnek dosya aşağıda paylaşılacak
