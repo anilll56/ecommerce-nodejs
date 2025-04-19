@@ -1,4 +1,5 @@
-export default [
+// eslint.config.js
+module.exports = [
   {
     files: ['**/*.js'],
     ignores: ['node_modules/**', 'dist/**'],
@@ -10,13 +11,13 @@ export default [
         module: 'readonly',
         __dirname: 'readonly',
         process: 'readonly',
+        console: 'readonly',
         describe: 'readonly',
         it: 'readonly',
         expect: 'readonly',
         beforeAll: 'readonly',
         afterAll: 'readonly',
         test: 'readonly',
-        console: 'readonly',
       },
     },
     rules: {
