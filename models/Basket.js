@@ -1,17 +1,17 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const BasketSchema = new Schema({
   user_id: {
     type: Schema.Types.ObjectId,
-    ref: "User",
+    ref: 'User',
     required: true,
   },
   products: [
     {
       product: {
         type: Schema.Types.ObjectId,
-        ref: "Product",
+        ref: 'Product',
         required: true,
       },
       quantity: {
@@ -36,11 +36,11 @@ const BasketSchema = new Schema({
   },
 });
 
-BasketSchema.pre("save", function (next) {
+BasketSchema.pre('save', function (next) {
   this.updatedAt = Date.now();
   next();
 });
 
-const Basket = mongoose.model("Basket", BasketSchema);
+const Basket = mongoose.model('Basket', BasketSchema);
 
 module.exports = Basket;

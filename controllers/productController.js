@@ -1,5 +1,4 @@
-const Product = require("../models/Product");
-const Comment = require("../models/Comment");
+const Product = require('../models/Product');
 
 const addProduct = async (req, res) => {
   try {
@@ -18,7 +17,7 @@ const addProduct = async (req, res) => {
       return res.status(400).json({
         success: false,
         message:
-          "All fields are required: name, seller_id, stock, price, colors, productImage",
+          'All fields are required: name, seller_id, stock, price, colors, productImage',
       });
     }
 
@@ -53,13 +52,13 @@ const addProduct = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: "Product Added",
+      message: 'Product Added',
       sellerProduct: newProduct,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Error adding product",
+      message: 'Error adding product',
       error: error.message,
     });
   }
@@ -70,7 +69,7 @@ const getAllProducts = async (req, res) => {
     const { category } = req.query;
     console.log(category);
     const query = category ? { productCategory: category } : {};
-    const products = await Product.find(query).populate("seller_id", "name");
+    const products = await Product.find(query).populate('seller_id', 'name');
     res.status(200).json({
       success: true,
       products,
@@ -78,7 +77,7 @@ const getAllProducts = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Error fetching products",
+      message: 'Error fetching products',
       error: error.message,
     });
   }
@@ -87,13 +86,13 @@ const getAllProducts = async (req, res) => {
 const getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id).populate(
-      "seller_id",
-      "name"
+      'seller_id',
+      'name'
     );
     if (!product) {
       return res.status(404).json({
         success: false,
-        message: "Product not found",
+        message: 'Product not found',
       });
     }
     res.status(200).json({
@@ -103,7 +102,7 @@ const getProductById = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Error fetching product",
+      message: 'Error fetching product',
       error: error.message,
     });
   }
@@ -121,19 +120,19 @@ const updateProduct = async (req, res) => {
     if (!updatedProduct) {
       return res.status(404).json({
         success: false,
-        message: "Product not found",
+        message: 'Product not found',
       });
     }
 
     res.status(200).json({
       success: true,
-      message: "Product updated",
+      message: 'Product updated',
       product: updatedProduct,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Error updating product",
+      message: 'Error updating product',
       error: error.message,
     });
   }
@@ -143,8 +142,8 @@ const getProductsBySeller = async (req, res) => {
   try {
     const sellerId = req.query.sellerId || req.user.userId;
     const products = await Product.find({ seller_id: sellerId }).populate(
-      "seller_id",
-      "name"
+      'seller_id',
+      'name'
     );
     res.status(200).json({
       success: true,
@@ -153,7 +152,7 @@ const getProductsBySeller = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Error fetching products",
+      message: 'Error fetching products',
       error: error.message,
     });
   }
@@ -166,18 +165,18 @@ const deleteProduct = async (req, res) => {
     if (!deletedProduct) {
       return res.status(404).json({
         success: false,
-        message: "Product not found",
+        message: 'Product not found',
       });
     }
 
     res.status(200).json({
       success: true,
-      message: "Product deleted",
+      message: 'Product deleted',
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Error deleting product",
+      message: 'Error deleting product',
       error: error.message,
     });
   }

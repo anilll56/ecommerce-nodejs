@@ -1,6 +1,6 @@
-const Comment = require("../models/Comment");
-const Product = require("../models/Product");
-const mongoose = require("mongoose");
+const Comment = require('../models/Comment');
+const Product = require('../models/Product');
+const mongoose = require('mongoose');
 
 const createComment = async (req, res) => {
   try {
@@ -14,21 +14,21 @@ const createComment = async (req, res) => {
     });
     const savedComment = await comment.save();
 
-    console.log("Product ID received:", product);
+    console.log('Product ID received:', product);
 
     const productId = new mongoose.Types.ObjectId(product);
     const productToUpdate = await Product.findById(productId);
 
     if (!productToUpdate) {
-      console.error("Product not found with ID:", product);
-      return res.status(404).json({ message: "Product not found" });
+      console.error('Product not found with ID:', product);
+      return res.status(404).json({ message: 'Product not found' });
     }
 
     const [totalComments, ratingAggregation] = await Promise.all([
       Comment.countDocuments({ product: productId }),
       Comment.aggregate([
         { $match: { product: productId } },
-        { $group: { _id: null, total: { $sum: "$rate" } } },
+        { $group: { _id: null, total: { $sum: '$rate' } } },
       ]),
     ]);
 
@@ -37,14 +37,14 @@ const createComment = async (req, res) => {
     const newAverageRating =
       totalComments > 0 ? totalRating / totalComments : 0;
 
-    console.log("New average rating:", newAverageRating);
+    console.log('New average rating:', newAverageRating);
 
     productToUpdate.productRating = newAverageRating.toFixed(1);
     await productToUpdate.save();
 
     return res.status(201).json(savedComment);
   } catch (error) {
-    console.error("Error in createComment:", error);
+    console.error('Error in createComment:', error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -54,7 +54,7 @@ const getCommentsByProduct = async (req, res) => {
     const comments = await Comment.find({
       product: req.params.productId,
     })
-      .populate("user", "name")
+      .populate('user', 'name')
       .sort({ date: -1 });
     res.status(200).json(comments);
   } catch (error) {
@@ -66,7 +66,7 @@ const updateComment = async (req, res) => {
   try {
     const comment = await Comment.findById(req.params.commentId);
     if (comment.user.toString() !== req.user.userId) {
-      return res.status(403).json({ message: "Unauthorized" });
+      return res.status(403).json({ message: 'Unauthorized' });
     }
     comment.text = req.body.text;
     const updatedComment = await comment.save();
@@ -80,10 +80,10 @@ const deleteComment = async (req, res) => {
   try {
     const comment = await Comment.findById(req.params.commentId);
     if (comment.user.toString() !== req.user.userId) {
-      return res.status(403).json({ message: "Unauthorized" });
+      return res.status(403).json({ message: 'Unauthorized' });
     }
     await comment.remove();
-    res.status(200).json({ message: "Comment deleted" });
+    res.status(200).json({ message: 'Comment deleted' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

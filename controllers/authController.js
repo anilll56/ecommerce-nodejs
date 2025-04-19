@@ -1,6 +1,6 @@
-const User = require("../models/User");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
+const User = require('../models/User');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -12,14 +12,14 @@ const register = async (req, res) => {
     if (!name || !email || !password || !userType || !phone) {
       return res.status(400).json({
         success: false,
-        message: "Missing input",
+        message: 'Missing input',
       });
     }
 
-    if (userType === "customer" && (!address || balance === undefined)) {
+    if (userType === 'customer' && (!address || balance === undefined)) {
       return res.status(400).json({
         success: false,
-        message: "Address and balance are required for customers",
+        message: 'Address and balance are required for customers',
       });
     }
 
@@ -27,7 +27,7 @@ const register = async (req, res) => {
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: "User with this email already exists.",
+        message: 'User with this email already exists.',
       });
     }
 
@@ -36,26 +36,26 @@ const register = async (req, res) => {
       email,
       password,
       userType,
-      address: userType === "customer" ? address : undefined,
+      address: userType === 'customer' ? address : undefined,
       phone,
-      balance: userType === "customer" ? balance : undefined,
+      balance: userType === 'customer' ? balance : undefined,
     });
 
     await newUser.save();
 
     const token = jwt.sign({ userId: newUser._id }, JWT_SECRET, {
-      expiresIn: "1h",
+      expiresIn: '1h',
     });
 
     res.status(201).json({
       success: true,
-      message: "User registered successfully",
+      message: 'User registered successfully',
       token,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Error registering user",
+      message: 'Error registering user',
       error: error.message,
     });
   }
@@ -68,7 +68,7 @@ const loginUser = async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: "Email and password are required.",
+        message: 'Email and password are required.',
       });
     }
 
@@ -76,7 +76,7 @@ const loginUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "Invalid email or password.",
+        message: 'Invalid email or password.',
       });
     }
 
@@ -84,19 +84,19 @@ const loginUser = async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
-        message: "Invalid email or password.",
+        message: 'Invalid email or password.',
       });
     }
 
     const token = jwt.sign(
       { id: user._id, email: user.email, userType: user.userType },
       JWT_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: '1d' }
     );
 
     res.status(200).json({
       success: true,
-      message: "Logged in successfully.",
+      message: 'Logged in successfully.',
       token,
       user: {
         id: user._id,
@@ -108,7 +108,7 @@ const loginUser = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Error logging in.",
+      message: 'Error logging in.',
       error: error.message,
     });
   }
@@ -116,12 +116,12 @@ const loginUser = async (req, res) => {
 
 const userInfo = async (req, res) => {
   try {
-    const user = await User.findById(req.user.userId).select("-password");
+    const user = await User.findById(req.user.userId).select('-password');
     res.json(user);
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Error getting user info.",
+      message: 'Error getting user info.',
       error: error.message,
     });
   }
@@ -136,23 +136,23 @@ const updateUser = async (req, res) => {
       userId,
       { name, email, address, phone, balance },
       { new: true, runValidators: true }
-    ).select("-password");
+    ).select('-password');
 
     if (!updatedUser) {
       return res.status(404).json({
         success: false,
-        message: "User not found",
+        message: 'User not found',
       });
     }
     res.json({
       success: true,
-      message: "User information updated successfully",
+      message: 'User information updated successfully',
       user: updatedUser,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Error updating user information",
+      message: 'Error updating user information',
       error: error.message,
     });
   }
@@ -167,7 +167,7 @@ const changePassword = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found",
+        message: 'User not found',
       });
     }
 
@@ -175,7 +175,7 @@ const changePassword = async (req, res) => {
     if (!isPasswordValid) {
       return res.status(400).json({
         success: false,
-        message: "Invalid old password",
+        message: 'Invalid old password',
       });
     }
 
@@ -184,12 +184,12 @@ const changePassword = async (req, res) => {
 
     res.json({
       success: true,
-      message: "Password changed successfully",
+      message: 'Password changed successfully',
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Error changing password",
+      message: 'Error changing password',
       error: error.message,
     });
   }
@@ -197,12 +197,12 @@ const changePassword = async (req, res) => {
 
 const getSellers = async (req, res) => {
   try {
-    const sellers = await User.find({ userType: "seller" }).select("-password");
+    const sellers = await User.find({ userType: 'seller' }).select('-password');
     res.json(sellers);
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Error getting sellers",
+      message: 'Error getting sellers',
       error: error.message,
     });
   }

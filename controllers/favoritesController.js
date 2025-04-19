@@ -1,15 +1,15 @@
-const Favorite = require("../models/Favorites");
-const mongoose = require("mongoose");
+const Favorite = require('../models/Favorites');
+const mongoose = require('mongoose');
 
 const getFavorites = async (req, res) => {
   const userId = req.user.userId;
   try {
     let favorites = await Favorite.find({
       user: userId,
-    }).populate("product");
+    }).populate('product');
 
     if (!favorites) {
-      return res.status(404).json({ message: "Favoriler bulunamadı." });
+      return res.status(404).json({ message: 'Favoriler bulunamadı.' });
     }
 
     favorites = favorites.map((favorite) => favorite.product);
@@ -25,7 +25,7 @@ const addFavorite = async (req, res) => {
   const userId = req.user.userId;
 
   if (!userId) {
-    return res.status(400).json({ message: "Kullanıcı kimliği bulunamadı." });
+    return res.status(400).json({ message: 'Kullanıcı kimliği bulunamadı.' });
   }
   try {
     const newFavorite = new Favorite({
@@ -36,7 +36,7 @@ const addFavorite = async (req, res) => {
     const favorite = await newFavorite.save();
     res.status(201).json(favorite);
   } catch (err) {
-    console.error("Error saving favorite:", err.message);
+    console.error('Error saving favorite:', err.message);
     res.status(500).json({ message: err.message });
   }
 };
@@ -50,7 +50,7 @@ const removeFavorite = async (req, res) => {
 
   // Check if the productId is a valid ObjectId
   if (!mongoose.Types.ObjectId.isValid(productId)) {
-    return res.status(400).json({ message: "Invalid product ID" });
+    return res.status(400).json({ message: 'Invalid product ID' });
   }
 
   try {
@@ -60,10 +60,10 @@ const removeFavorite = async (req, res) => {
     });
 
     if (!favorite) {
-      return res.status(404).json({ message: "Favorite not found" });
+      return res.status(404).json({ message: 'Favorite not found' });
     }
 
-    res.status(200).json({ message: "Favorite removed" });
+    res.status(200).json({ message: 'Favorite removed' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

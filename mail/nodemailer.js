@@ -1,32 +1,32 @@
-const nodemailer = require("nodemailer");
+const nodemailer = require('nodemailer');
 
 async function sendEmail(user, message, product) {
   try {
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      service: 'gmail',
       auth: {
-        user: "numansocu5258@gmail.com",
-        pass: "fquo oxjm kybl pifw",
+        user: 'numansocu5258@gmail.com',
+        pass: 'fquo oxjm kybl pifw',
       },
     });
 
     await transporter.verify();
-    console.log("SMTP bağlantısı başarılı.");
+    console.log('SMTP bağlantısı başarılı.');
 
     const mailOptions = {
-      from: "numansocu5258@gmail.com",
+      from: 'numansocu5258@gmail.com',
       to: user.email,
-      subject: "Siparişiniz Alındı!",
-      text: "Sipariş detaylarınızı görmek için HTML destekli bir e-posta istemcisi kullanın.",
+      subject: 'Siparişiniz Alındı!',
+      text: 'Sipariş detaylarınızı görmek için HTML destekli bir e-posta istemcisi kullanın.',
       html: emailTemplate(user, message, product),
     };
 
     // E-postayı gönder
     const info = await transporter.sendMail(mailOptions);
-    console.log("E-posta başarıyla gönderildi:", info.response);
+    console.log('E-posta başarıyla gönderildi:', info.response);
   } catch (error) {
-    console.error("Hata oluştu:", error.message);
-    console.error("Detaylı hata bilgisi:", error);
+    console.error('Hata oluştu:', error.message);
+    console.error('Detaylı hata bilgisi:', error);
   }
 }
 
