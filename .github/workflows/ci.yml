@@ -14,54 +14,38 @@ jobs:
 
     steps:
       - name: 🚀 Checkout code
-        uses: actions/checkout@v4 # v3 yerine v4 kullanıyoruz, en güncel versiyon
+        uses: actions/checkout@v4
 
       - name: 🟢 Set up Node.js
-        uses: actions/setup-node@v4 # v3 yerine v4 kullanıyoruz
+        uses: actions/setup-node@v4
         with:
           node-version: "18"
-          cache: "npm" # npm bağımlılıklarını otomatik cache'ler
+          cache: "npm"
 
       - name: 📦 Install Dependencies
         run: npm ci
 
       - name: 🧹 Run Linter
         run: npm run lint
-        # Not: Projenizde ESLint veya Prettier kurulu olmalı ve `package.json` içinde `lint` script'i tanımlı olmalı
-        # Örnek: "lint": "eslint ."
-
-      - name: 🧪 Run Tests with Coverage
-        run: npm test -- --coverage
-        # Not: Jest veya benzeri bir test framework'ü kurulu olmalı ve coverage desteği aktif olmalı
-        # Örnek: "test": "jest"
-
-      - name: 📊 Upload Coverage Report
-        uses: codecov/codecov-action@v4 # v3 yerine v4 kullanıyoruz
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
-
-      - name: 🔍 Run Security Audit
-        run: npm audit --audit-level=high
 
       - name: 🔨 Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3 # v2 yerine v3 kullanıyoruz
+        uses: docker/setup-buildx-action@v3
 
       - name: 🗄️ Cache Docker Layers
-        uses: actions/cache@v4 # v3 yerine v4 kullanıyoruz
+        uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
           key: buildx-${{ github.sha }}
           restore-keys: buildx-
 
       - name: 🔑 Log in to Docker Hub
-        uses: docker/login-action@v3 # v2 yerine v3 kullanıyoruz
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: 🏗️ Build Docker Image
-        uses: docker/build-push-action@v6 # v5 yerine v6 kullanıyoruz
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: false
@@ -70,10 +54,6 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
-
-      - name: 🧪 Run Tests in Docker Container
-        run: docker run --rm ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:latest
-        # Not: Docker imajınızın test komutunu çalıştırması için Dockerfile'da uygun CMD veya ENTRYPOINT tanımlı olmalı
 
       - name: 📤 Push Docker Image
         if: success()
@@ -86,9 +66,99 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
 
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: 🚀 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 🧪 Run Tests with Coverage
+        run: npm test -- --coverage
+
+      - name: 📊 Upload Coverage Report
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          fail_ci_if_error: true
+
+      - name: 🔑 Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: 🧪 Run Tests in Docker Container
+        run: docker run --rm ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:latest
+
+  security:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: 🚀 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 🔍 Run Security Audit
+        run: npm audit --audit-level=high
+
+      - name: 🔍 Run CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "security"
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build, test, security]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: 🚀 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔑 Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: 🐳 Install Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+
       - name: 🚀 Deploy to Test Environment with Docker Compose
-        if: github.ref == 'refs/heads/main'
         run: |
           docker-compose -f docker-compose.test.yml up -d
-        # Not: Bu adım için bir `docker-compose.test.yml` dosyası oluşturmalısınız
-        # Örnek dosya aşağıda paylaşılacak
+
+      - name: 📢 Notify Slack on Success
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "text": "Deployment to Test Environment Successful!",
+              "attachments": [
+                {
+                  "text": "The latest version of the app has been deployed successfully.",
+                  "color": "#36a64f"
+                }
+              ]
+            }
