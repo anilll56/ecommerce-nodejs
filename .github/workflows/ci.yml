@@ -155,6 +155,7 @@ jobs:
 
       - name: 🚀 Deploy to Test Environment with Docker Compose
         run: |
+          export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
           docker-compose -f docker-compose.test.yml up -d
 
       - name: 📢 Notify Slack on Success
