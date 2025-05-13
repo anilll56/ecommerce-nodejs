@@ -13,93 +13,84 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🚀 Checkout code
+      - name: 🚀 Kodu Çek
         uses: actions/checkout@v4
 
-      - name: 🟢 Set up Node.js
+      - name: 🟢 Node.js Kurulumu
         uses: actions/setup-node@v4
         with:
           node-version: "18"
           cache: "npm"
 
-      - name: 📦 Install Dependencies
+      - name: 📦 Bağımlılıkları Yükle
         run: npm ci
 
-      - name: 🧹 Run Linter
+      - name: 🧹 Linter Çalıştır
         run: npm run lint
 
-      - name: 🔨 Set up Docker Buildx
+      - name: 🔨 Docker Buildx Kurulumu
         uses: docker/setup-buildx-action@v3
 
-      - name: 🗄️ Cache Docker Layers
+      - name: 🗄️ Docker Katmanlarını Önbelleğe Al
         uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
-          key: buildx-${{ github.sha }}
-          restore-keys: buildx-
+          key: buildx-${{ github.ref_name }}-${{ hashFiles('Dockerfile', 'package-lock.json') }}
+          restore-keys: |
+            buildx-${{ github.ref_name }}-
+            buildx-
 
-      - name: 🔑 Log in to Docker Hub
+      - name: 🔑 Docker Hub'a Giriş Yap
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: 🏗️ Build Docker Image
+      - name: 🏗️ Docker İmajını Oluştur ve İt
         uses: docker/build-push-action@v6
         with:
           context: .
-          push: false
+          push: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:latest
             ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
-      - name: 📤 Push Docker Image
-        if: success()
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          tags: |
-            ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:latest
-            ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:${{ github.sha }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-
   test:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: 🚀 Checkout code
+      - name: 🚀 Kodu Çek
         uses: actions/checkout@v4
 
-      - name: 🟢 Set up Node.js
+      - name: 🟢 Node.js Kurulumu
         uses: actions/setup-node@v4
         with:
           node-version: "18"
           cache: "npm"
 
-      - name: 📦 Install Dependencies
+      - name: 📦 Bağımlılıkları Yükle
         run: npm ci
 
-      - name: 🧪 Run Tests with Coverage
+      - name: 🧪 Testleri Çalıştır ve Kapsam Raporu Oluştur
         run: npm test -- --coverage
 
-      - name: 📊 Upload Coverage Report
+      - name: 📊 Kapsam Raporunu Yükle
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/lcov.info
           fail_ci_if_error: true
 
-      - name: 🔑 Log in to Docker Hub
+      - name: 🔑 Docker Hub'a Giriş Yap
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: 🧪 Run Tests in Docker Container
-        run: docker run --rm ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:latest
+      - name: 🧪 Docker Konteynerinde Testleri Çalıştır
+        run: docker run --rm ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:latest npm test
 
   security:
     runs-on: ubuntu-latest
@@ -109,52 +100,55 @@ jobs:
       contents: read
       actions: read
     steps:
-      - name: 🚀 Checkout code
+      - name: 🚀 Kodu Çek
         uses: actions/checkout@v4
 
-      - name: 🟢 Set up Node.js
+      - name: 🟢 Node.js Kurulumu
         uses: actions/setup-node@v4
         with:
           node-version: "18"
           cache: "npm"
 
-      - name: 📦 Install Dependencies
+      - name: 📦 Bağımlılıkları Yükle
         run: npm ci
 
-      - name: 🔍 Initialize CodeQL
+      - name: 🔍 CodeQL Başlat
         uses: github/codeql-action/init@v3
         with:
           languages: javascript
           queries: security-and-quality
 
-      - name: 🔍 Perform CodeQL Analysis
+      - name: 🔍 CodeQL Analizi Yap
         uses: github/codeql-action/analyze@v3
 
-      - name: 🔍 Run Security Audit
-        run: npm audit --audit-level=high
+      - name: 🔍 Güvenlik Denetimi Yap
+        run: npm audit --audit-level=critical
 
   deploy:
     runs-on: ubuntu-latest
     needs: [build, test, security]
     if: github.ref == 'refs/heads/main'
     steps:
-      - name: 🚀 Checkout code
+      - name: 🚀 Kodu Çek
         uses: actions/checkout@v4
 
-      - name: 🔑 Log in to Docker Hub
+      - name: 🔑 Docker Hub'a Giriş Yap
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: 🐳 Install Docker Compose
+      - name: 🐳 Docker Compose Kurulumu
         run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
           docker-compose --version
 
-      - name: 🚀 Deploy to Test Environment with Docker Compose
+      - name: 🚀 Test Ortamına Docker Compose ile Dağıt
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         run: |
+          docker-compose -f docker-compose.test.yml pull
           docker-compose -f docker-compose.test.yml up -d
+          sleep 10 # Konteynerlerin başlaması için bekle
+          docker-compose -f docker-compose.test.yml ps
