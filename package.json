@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest --transformIgnorePatterns \"node_modules/(?!bson)\"",
+    "test:ci": "JEST_JUNIT_CLASSNAME=\"{filepath}\" jest --transformIgnorePatterns \"node_modules/(?!bson)\" --reporters=jest-junit --coverage",
     "start": "node index.js",
     "lint": "eslint ."
   },
