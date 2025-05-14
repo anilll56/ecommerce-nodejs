@@ -14,20 +14,45 @@ describe('API Tests', () => {
   });
 });
 
-describe('POST /api/shorten', () => {
-  it('Kısa URL oluşturma', async () => {
-    const res = await request(app)
-      .post('/api/shorten')
-      .send({ url: 'https://example.com' });
-    expect(res.statusCode).toBe(200);
-    expect(res.body).toHaveProperty('shortUrl');
-  });
+describe('Order API Tests', () => {
+  let token;
+  let orderId;
 
-  it('Geçersiz URL hatası', async () => {
+  beforeAll(async () => {
+    // Kullanıcı kaydı ve giriş işlemleri
+    const user = {
+      name: 'Test User',
+      email: 'test@mail.com',
+      password: 'password123',
+      userType: 'customer',
+    };
+    const res = await request(app).post('/api/auth/register').send(user);
+    expect(res.statusCode).toBe(201);
+    expect(res.body.success).toBe(true);
+    expect(res.body.message).toBe('User registered successfully');
+    token = res.body.token;
+  });
+  afterAll(async () => {
+    // Test veritabanını temizle
+    await mongoose.connection.db.dropDatabase();
+  });
+  it('Sipariş oluşturma', async () => {
+    const orderData = {
+      customer_id: 'customerId',
+      seller_id: 'sellerId',
+      products: [
+        { product: 'productId1', quantity: 2 },
+        { product: 'productId2', quantity: 1 },
+      ],
+    };
+
     const res = await request(app)
-      .post('/api/shorten')
-      .send({ url: 'invalid-url' });
-    expect(res.statusCode).toBe(400);
-    expect(res.body.error).toBe('Invalid URL');
+      .post('/api/orders')
+      .set('Authorization', `Bearer ${token}`)
+      .send(orderData);
+
+    expect(res.statusCode).toBe(201);
+    expect(res.body).toHaveProperty('_id');
+    orderId = res.body._id;
   });
 });
