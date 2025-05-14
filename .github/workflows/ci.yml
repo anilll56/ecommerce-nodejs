@@ -74,7 +74,7 @@ jobs:
         run: npm ci
 
       - name: 🧪 Run Tests with Coverage and JUnit Output
-        run: npm run test:ci # JUnit XML ve kapsam raporu üretir (aşağıda package.json’da tanımlanmalı)
+        run: npm run test:ci
 
       - name: 📊 Upload Coverage Report
         uses: codecov/codecov-action@v4
