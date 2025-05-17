@@ -25,11 +25,11 @@ describe('User API Tests', () => {
       email: 'testuser@example.com',
       userType: 'customer',
       password: '12345678',
-      address: 'Test Mahallesi',
+      address: 'Test ',
       phone: '5551234567',
     });
 
-    expect(res.statusCode).toBe(201); // 201 Created
+    expect(res.statusCode).toBe(201);
     expect(res.body).toHaveProperty('_id');
     expect(res.body).toHaveProperty('email', 'testuser@example.com');
     expect(res.body).toHaveProperty('userType', 'customer');

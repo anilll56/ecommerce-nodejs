@@ -4,14 +4,9 @@
   "main": "index.js",
   "scripts": {
     "test": "jest --transformIgnorePatterns \"node_modules/(?!bson)\"",
-    "test:ci": "JEST_JUNIT_CLASSNAME=\"{filepath}\" jest --transformIgnorePatterns \"node_modules/(?!bson)\" --reporters=jest-junit --coverage",
+    "test:ci": "cross-env JEST_JUNIT_CLASSNAME=\"{filepath}\" jest --transformIgnorePatterns \"node_modules/(?!bson)\" --reporters=jest-junit --coverage",
     "start": "node index.js",
     "lint": "eslint ."
-  },
-  "jest": {
-    "reporters": [
-      "default"
-    ]
   },
   "keywords": [],
   "author": "",
@@ -21,6 +16,7 @@
     "@babel/core": "^7.26.10",
     "@babel/preset-env": "^7.26.9",
     "babel-jest": "^29.7.0",
+    "cross-env": "^7.0.3",
     "eslint": "^9.25.0",
     "jest": "^29.7.0",
     "jest-junit": "^16.0.0",
