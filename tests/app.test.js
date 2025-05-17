@@ -13,3 +13,26 @@ describe('API Tests', () => {
     expect(res.text).toBe('Server is up and running');
   });
 });
+
+describe('User API Tests', () => {
+  afterAll(async () => {
+    await mongoose.connection.close();
+  });
+
+  it('POST /users yeni kullanıcı oluşturmalı', async () => {
+    const res = await request(app).post('/users').send({
+      name: 'Test Kullanıcı',
+      email: 'testuser@example.com',
+      userType: 'customer',
+      password: '12345678',
+      address: 'Test Mahallesi',
+      phone: '5551234567',
+    });
+
+    expect(res.statusCode).toBe(201); // 201 Created
+    expect(res.body).toHaveProperty('_id');
+    expect(res.body).toHaveProperty('email', 'testuser@example.com');
+    expect(res.body).toHaveProperty('userType', 'customer');
+    expect(res.body).toHaveProperty('name', 'Test Kullanıcı');
+  });
+});
