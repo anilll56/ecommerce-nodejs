@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="jest tests" tests="2" failures="1" errors="0" time="1.465">
-  <testsuite name="API Tests" errors="0" failures="1" skipped="0" timestamp="2025-05-17T09:10:30" time="1.414" tests="2">
-    <testcase classname="tests\app.test.js" name="API Tests Health endpoint çalışıyor mu?" time="0.024">
+<testsuites name="jest tests" tests="2" failures="1" errors="0" time="2.039">
+  <testsuite name="API Tests" errors="0" failures="1" skipped="0" timestamp="2025-05-17T09:34:03" time="1.986" tests="2">
+    <testcase classname="tests\app.test.js" name="API Tests Health endpoint çalışıyor mu?" time="0.02">
     </testcase>
-    <testcase classname="tests\app.test.js" name="User API Tests POST /users yeni kullanıcı oluşturmalı" time="0.015">
+    <testcase classname="tests\app.test.js" name="User API Tests POST /users yeni kullanıcı oluşturmalı" time="0.023">
       <failure>Error: expect(received).toBe(expected) // Object.is equality
 
 Expected: 201
 Received: 404
-    at Object.toBe (C:\Users\Anilt\OneDrive\Desktop\Projects\ecommerce-nodejs\tests\app.test.js:32:28)
+    at Object.toBe (C:\Users\Anilt\OneDrive\Desktop\Projects\ecommerce-nodejs\tests\app.test.js:48:28)
     at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
     </testcase>
   </testsuite>

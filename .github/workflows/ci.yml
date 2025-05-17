@@ -19,8 +19,8 @@ jobs:
       - name: 🟢 Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
-          cache: "npm"
+          node-version: '18'
+          cache: 'npm'
 
       - name: 📦 Install Dependencies
         run: npm ci
@@ -67,14 +67,20 @@ jobs:
       - name: 🟢 Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
-          cache: "npm"
+          node-version: '18'
+          cache: 'npm'
 
       - name: 📦 Install Dependencies
-        run: npm ci
+        run: npm ci && npm list mongodb-memory-server || echo "mongodb-memory-server eksik"
 
       - name: 🧪 Run Tests with Coverage and JUnit Output
-        run: npm run test:ci
+        run: npm run test:ci -- --runInBand --verbose || (echo "Testler başarısız, detaylar yukarıda" && exit 1)
+        env:
+          NODE_ENV: test
+          PORT: 3000
+
+      - name: 📋 Check Coverage File
+        run: ls -la coverage/ && cat coverage/lcov.info || echo "Coverage dosyası bulunamadı"
 
       - name: 📊 Upload Coverage Report
         uses: codecov/codecov-action@v4
@@ -96,7 +102,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: 🧪 Run Tests in Docker Container
-        run: docker run --rm ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:latest npm test
+        run: docker run --rm -e NODE_ENV=test ${{ secrets.DOCKER_USERNAME }}/ecommerce-app:latest npm test
 
   security:
     runs-on: ubuntu-latest
@@ -112,8 +118,8 @@ jobs:
       - name: 🟢 Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
-          cache: "npm"
+          node-version: '18'
+          cache: 'npm'
 
       - name: 📦 Install Dependencies
         run: npm ci
