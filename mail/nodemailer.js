@@ -1,12 +1,13 @@
 const nodemailer = require('nodemailer');
+require('dotenv').config();
 
 async function sendEmail(user, message, product) {
   try {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: 'numansocu5258@gmail.com',
-        pass: 'fquo oxjm kybl pifw',
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
 
@@ -14,14 +15,13 @@ async function sendEmail(user, message, product) {
     console.log('SMTP bağlantısı başarılı.');
 
     const mailOptions = {
-      from: 'numansocu5258@gmail.com',
+      from: process.env.EMAIL_USER,
       to: user.email,
       subject: 'Siparişiniz Alındı!',
       text: 'Sipariş detaylarınızı görmek için HTML destekli bir e-posta istemcisi kullanın.',
       html: emailTemplate(user, message, product),
     };
 
-    // E-postayı gönder
     const info = await transporter.sendMail(mailOptions);
     console.log('E-posta başarıyla gönderildi:', info.response);
   } catch (error) {
