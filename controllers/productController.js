@@ -141,7 +141,13 @@ const updateProduct = async (req, res) => {
 const getProductsBySeller = async (req, res) => {
   try {
     const sellerId = req.query.sellerId || req.user.userId;
-    const products = await Product.find({ seller_id: sellerId }).populate(
+    if (typeof sellerId !== 'string') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid seller ID',
+      });
+    }
+    const products = await Product.find({ seller_id: { $eq: sellerId } }).populate(
       'seller_id',
       'name'
     );
