@@ -29,26 +29,26 @@ describe('API Tests', () => {
   });
 });
 
-// describe('User API Tests', () => {
-//   afterEach(async () => {
-//     await mongoose.connection.db.collection('users').deleteMany({});
-//   });
+describe('User API Tests', () => {
+  afterEach(async () => {
+    await mongoose.connection.db.collection('users').deleteMany({});
+  });
 
-//   it('POST /users yeni kullanıcı oluşturmalı', async () => {
-//     const email = `testuser${Date.now()}@example.com`;
-//     const res = await request(app).post('/users').send({
-//       name: 'Test Kullanıcı',
-//       email,
-//       userType: 'customer',
-//       password: '12345678',
-//       address: 'Test',
-//       phone: '5551234567',
-//     });
+  it('POST /users yeni kullanıcı oluşturmalı', async () => {
+    const email = `testuser${Date.now()}@example.com`;
+    const res = await request(app).post('/users').send({
+      name: 'Test Kullanıcı',
+      email,
+      userType: 'customer',
+      password: '12345678',
+      address: 'Test',
+      phone: '5551234567',
+    });
 
-//     expect(res.statusCode).toBe(201);
-//     expect(res.body).toHaveProperty('_id');
-//     expect(res.body).toHaveProperty('email', email);
-//     expect(res.body).toHaveProperty('userType', 'customer');
-//     expect(res.body).toHaveProperty('name', 'Test Kullanıcı');
-//   });
-// });
+    expect(res.statusCode).toBe(201);
+    expect(res.body).toHaveProperty('_id');
+    expect(res.body).toHaveProperty('email', email);
+    expect(res.body).toHaveProperty('userType', 'customer');
+    expect(res.body).toHaveProperty('name', 'Test Kullanıcı');
+  });
+});
